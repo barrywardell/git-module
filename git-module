@@ -13,18 +13,17 @@ bash_completion_text ='''
 _git_module () { local cur prev
     _get_comp_words_by_ref -n =: cur prev
     case "$prev" in
-    init-upstream|rm|mv|checkout|update|fetch)
+    init-upstream|rm|mv|checkout|update|fetch|config)
 	    __gitcomp "$(git module ls)"
     	return
 	    ;;
     git-module|module)
-        __gitcomp "add checkout fetch init-upstream ls mv rm setup update"
+        __gitcomp "add checkout config fetch init-upstream ls mv rm setup update"
         return
         ;;
     *)
-	    __gitcomp "$(git module ls)"
-    	return
-	    ;;
+        return
+        ;;
     esac
 }
 '''
@@ -219,6 +218,13 @@ def main(*args):
             else:
                 modules = args[2:]
             fetch_modules(modules)
+        elif command == 'config':
+            module = args[2]
+            configvar = args[3]
+            if len(args) > 4:
+                call(['git', 'config', '--file=.gitmodules', 'submodule.'+module+'.'+configvar, args[4]])
+            else:
+                call(['git', 'config', '--file=.gitmodules', 'submodule.'+module+'.'+configvar])
         elif command == 'ls':
             modules = list_submodules()
             for module in modules:
