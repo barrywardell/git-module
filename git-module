@@ -178,6 +178,10 @@ def main(*args):
 
             checkout_modules(list_submodules())
         elif command == 'init-upstream':
+            if args[2] == '--all':
+                modules = list_submodules()
+            else:
+                modules = args[2:]
             path = args[2]
             upstream_init(path)
         elif command == 'checkout':
