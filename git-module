@@ -1,0 +1,204 @@
+#!/usr/bin/env python
+
+# module
+# A tool for managing git submodules
+
+import pprint
+import sys
+import os
+import re
+from subprocess import check_output, call
+
+bash_completion_text ='''
+_git_module () { local cur prev
+    _get_comp_words_by_ref -n =: cur prev
+    case "$prev" in
+    init-upstream|rm|mv|checkout)
+	    __gitcomp "$(git module ls)"
+    	return
+	    ;;
+    git-module|module)
+        __gitcomp "checkout init-upstream ls mv rm setup"
+        return
+        ;;
+    *)
+	    __gitcomp "$(git module ls)"
+    	return
+	    ;;
+    esac
+}
+'''
+
+def num_lines(test):
+    for i, l in enumerate(test.split('\n')):
+        pass
+    return i + 1
+
+def is_submodule(path):
+    output = check_output(['git', 'ls-files', '--stage', '--', path]).rstrip('\n')
+    if(num_lines(output) != 1):
+        return False
+    if output[0:6] == '160000':
+        return True
+    else:
+        return False
+
+def upstream_type(path):
+    return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamtype']).rstrip('\n')
+
+def upstream_url(path):
+    return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamurl']).rstrip('\n')
+
+def revision(path):
+    return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.revision']).rstrip('\n')
+
+def upstream_init(path):
+    if not is_submodule(path):
+        print('Error: ' + path + ' is not a submodule.')
+        return
+
+    path = path.rstrip('/')
+    type = upstream_type(path)
+    url = upstream_url(path)
+    git_dir = '--git-dir=' + os.path.join(path, '.git')
+    work_tree = '--work-tree=' + path
+    
+    print 'Initialising submodule ' + type + ' upstream repository for ' + path + '\nwith upstream URL ' + url
+    
+    if type == 'svn':
+        rev = revision(path)
+        call(['git', git_dir, work_tree, 'checkout', rev])
+        call(['git', git_dir, work_tree, 'svn', 'init', '-s', '--prefix=origin/', url])
+        call(['git', git_dir, work_tree, 'svn', 'fetch'])
+    elif type == 'git':
+        call(['git', git_dir, work_tree, 'remote', 'add', 'upstream', url])
+    elif type == 'hg':
+        hgpath = path+'.hg'
+        call(['hg', 'clone', url, hgpath])
+        hgrc = open(os.path.join(hgpath,'.hg/hgrc'), 'a')
+        hgrc.write('\n[path]\ngit = '+path+'\n\n[git]\nintree = 1\n')
+        hgrc.close()
+        call(['hg', '-R', hgpath, 'bookmark', 'master', '-r', 'default'])
+        call(['hg', '-R', hgpath, 'gexport'])
+        call(['hg', '-R', hgpath, 'pull', 'git'])
+    else:
+        print('Unknown upstream repository type: '+type)
+    return
+
+def mv_submodule(old, new):
+    if not is_submodule(old):
+        print('Error: ' + old + ' is not a submodule.')
+        return
+    call(['git', 'config', '--rename-section', 'submodule.'+old, 'submodule.'+new])
+    call(['git', 'config', '-f', '.gitmodules', '--rename-section', 'submodule.'+old, 'submodule.'+new])
+    call(['git', 'config', '-f', '.gitmodules', 'submodule.'+new+'.path', new])
+    call(['git', 'rm', '--cached', old])
+    os.rename(old, new)
+    call(['git', 'add', new])
+    call(['git', 'add', '.gitmodules'])
+
+def mv_submodule(old):
+    if not is_submodule(old):
+        print('Error: ' + old + ' is not a submodule.')
+        return
+    call(['git', 'config', '--remove-section', 'submodule.'+old])
+    call(['git', 'config', '-f', '.gitmodules', '--remove-section', 'submodule.'+old])
+    call(['git', 'rm', '--cached', old])
+    call(['git', 'add', '.gitmodules'])
+
+def init_module(path):
+    if not is_submodule(old):
+        print('Error: ' + old + ' is not a submodule.')
+        return
+    path = path.rstrip('/')
+    git_dir = '--git-dir=' + os.path.join(path, '.git')
+    work_tree = '--work-tree=' + path
+    
+    print 'Initialising submodule ' + path
+    
+    rev = revision(path)
+    call(['git', git_dir, work_tree, 'checkout', rev])
+
+def list_submodules():
+    f = open('.gitmodules')
+    pattern = re.compile('\[submodule "(.*)"]')
+    modules = []
+    for line in f:
+        module = pattern.match(line)
+        if module != None:
+            modules.append(module.group(1))
+    f.close()
+    return modules
+
+def checkout_modules(modules):
+    print 'Checking out branches in submodules:'
+    for module in modules:
+        rev = revision(module)    
+        git_dir = '--git-dir=' + os.path.join(module, '.git')
+        work_tree = '--work-tree=' + module
+        print '  ' + module + ': ' + rev
+        call(['git', git_dir, work_tree, 'checkout', '-q', rev])
+
+def main(*args):
+    try:
+        if not os.path.isfile('.gitmodules'):
+            print 'You need to run this command from the toplevel of the working tree.'
+            return 1
+
+        command = args[1]
+        
+        if command == 'setup':
+            bindir = os.path.join(os.getcwd(),'bin')
+            f = open(os.path.expanduser('~/.profile'), 'r')
+            tmp = open(os.path.expanduser('~/.profile.tmp'), 'w')
+            addLine = True
+            for line in f:
+                if line == '# Begin git-module section\n':
+                    addLine = False
+                    continue
+                elif line == '# End git-module section\n':
+                    addLine = True
+                    continue
+                if addLine:
+                    tmp.write(line)
+            f.close()
+
+            print 'Adding git-module section to ~/.profile'
+            if(line[-1] != '\n'):
+                tmp.write('\n')
+            tmp.write('# Begin git-module section\n')
+            tmp.write('export PATH=' + bindir + ':$PATH\n')
+            tmp.write(bash_completion_text)
+            tmp.write('# End git-module section\n')
+            tmp.close()
+            if addLine == True:
+                os.rename(os.path.expanduser('~/.profile.tmp'), os.path.expanduser('~/.profile'))
+            else:
+                print "Not replacing ~/.profile with ~/.profile.tmp for safety. Replace it manually if it looks OK."
+
+            checkout_modules(list_submodules())
+        elif command == 'init-upstream':
+            path = args[2]
+            upstream_init(path)
+        elif command == 'checkout':
+            checkout_modules(args[2:])
+        elif command == 'ls':
+            modules = list_submodules()
+            for module in modules:
+                print module
+        elif command == 'mv':
+            print 'Moving submodule ' + args[2] + ' to ' + args[3]
+            mv_submodule(args[2], args[3])
+        elif command == 'rm':
+            print 'Removing submodule ' + args[2]
+            rm_submodule(args[2], args[3])
+        else:
+            print 'Unknown command ' + command
+    except:
+        print 'Except', sys.exc_info()
+        pass
+    else:
+        return 0 # exit errorlessly
+ 
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv))

@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+# ==================================
+#   Block 'annoying' merge commits
+# ==================================
+#
+# Check each merge commit and reject the push if there are any that satisfy
+# the criteria that on either side of the merge, none of the new commits being
+# merged in are already on an existing branch. Indicating existing commits by
+# 'x' and new commits being pushed by 'o', this basically blocks merges like
+#
+#   x---x---x---x
+#    \       \
+#     o---o---o
+#
+# while allowing through merges of the kind
+#
+#   x---x---x---x
+#    \       \
+#     x---o---o
+#
+# This catches the most common annoying merge commit case of someone pulling
+# without rebase. When this happens, they should rebase their changes:
+#   git rebase origin/<branch>
+#
+# If it is important to keep the changes and merge commits without rebaseing,
+# then create a new named branch for them:
+# 1. Create a branch at the point where we diverged from origin and push it
+#    (replace <rejected-sha1> with whichever merge commit was rejected)
+#       $ git merge-base `git log -1 --format=%P <rejected-sha1>`
+#       <base-sha1>
+#       $ git checkout -b <new-branch> <base-sha1>
+# 2. Reset <new-branch> to point at <branch> and <branch> to point at origin/<branch>
+#       $ git reset --hard <branch>
+#       $ git checkout <branch>
+#       $ git reset --hard origin/<branch>
+# 3. Push <new-branch>
+#       $ git push origin <new-branch>
+# 4. Merge <new-branch> into <branch>
+#       $ git merge <new-branch> --no-ff
+#       $ git push origin <branch>
+
+
+from subprocess import call, check_output
+import sys
+import re
+
+refname = sys.argv[1]
+oldrev = sys.argv[2]
+newrev = sys.argv[3]
+
+# Allow new branches to be pushed
+if oldrev == '0000000000000000000000000000000000000000':
+    exit(0)
+
+# Get a list of merge commits being pushed
+merges = check_output(['git', 'log', '--format=%H %P', '--merges', oldrev+'..'+newrev]).split('\n')
+
+for merge in merges:
+    if merge == '':
+        continue
+    merge = re.split(' ', merge)
+    # We only support merges with two parents
+    if len(merge) != 3:
+        print "Pushing merge commits with more than two parents is not currently supported"
+        exit(1)
+    
+    [commit, parent1, parent2] = merge
+    
+    merge_base = check_output(['git', 'merge-base', parent1, parent2]).rstrip('\n')
+
+    # Get a list of all commits leading up to parent1, excluding those in parent2
+    commits1a = check_output(['git', 'rev-list', parent2+'..'+parent1, '--not', merge_base]).rstrip('\n').split('\n')
+
+    # Get a list of all commits leading up to parent1, excluding those in parent2 and in refs/heads/*
+    commits1b = check_output(['git', 'rev-list', parent2+'..'+parent1, '--not', '--branches', merge_base]).rstrip('\n').split('\n')
+
+    # Get a list of all commits leading up to parent1, excluding those in parent2
+    commits2a = check_output(['git', 'rev-list', parent1+'..'+parent2, '--not', merge_base]).rstrip('\n').split('\n')
+
+    # Get a list of all commits leading up to parent1, excluding those in parent2 and in refs/heads/*
+    commits2b = check_output(['git', 'rev-list', parent1+'..'+parent2, '--not', '--branches', merge_base]).rstrip('\n').split('\n')
+
+    if (commits1a == commits1b and commits1a != ['']) or (commits2a == commits2b and commits2a != ['']):
+        print "Merge commit "+commit+" denied."
+        exit(1)
