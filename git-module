@@ -181,7 +181,11 @@ def main(*args):
             path = args[2]
             upstream_init(path)
         elif command == 'checkout':
-            checkout_modules(args[2:])
+            if args[2] == '--all':
+                modules = list_submodules()
+            else:
+                modules = args[2:]
+            checkout_modules(modules)
         elif command == 'ls':
             modules = list_submodules()
             for module in modules:
