@@ -13,12 +13,12 @@ bash_completion_text ='''
 _git_module () { local cur prev
     _get_comp_words_by_ref -n =: cur prev
     case "$prev" in
-    init-upstream|rm|mv|checkout)
+    init-upstream|rm|mv|checkout|update)
 	    __gitcomp "$(git module ls)"
     	return
 	    ;;
     git-module|module)
-        __gitcomp "add checkout init-upstream ls mv rm setup"
+        __gitcomp "add checkout init-upstream ls mv rm setup update"
         return
         ;;
     *)
@@ -148,6 +148,13 @@ def checkout_modules(modules):
         print '  ' + module + ': ' + rev
         call(['git', git_dir, work_tree, 'checkout', '-q', rev])
 
+def fetch_modules(modules):
+    print 'Getting updates for submodules:'
+    for module in modules:
+        git_dir = '--git-dir=' + os.path.join(module, '.git')
+        print '  ' + module
+        call(['git', git_dir, 'fetch', '-q'])
+
 def main(*args):
     try:
         if not os.path.isfile('.gitmodules'):
@@ -199,6 +206,19 @@ def main(*args):
             else:
                 modules = args[2:]
             checkout_modules(modules)
+        elif command == 'update':
+            if args[2] == '--all':
+                modules = list_submodules()
+            else:
+                modules = args[2:]
+            fetch_modules(modules)
+            checkout_modules(modules)
+        elif command == 'fetch':
+            if args[2] == '--all':
+                modules = list_submodules()
+            else:
+                modules = args[2:]
+            fetch_modules(modules)
         elif command == 'ls':
             modules = list_submodules()
             for module in modules:
