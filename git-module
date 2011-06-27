@@ -18,7 +18,7 @@ _git_module () { local cur prev
     	return
 	    ;;
     git-module|module)
-        __gitcomp "checkout init-upstream ls mv rm setup"
+        __gitcomp "add checkout init-upstream ls mv rm setup"
         return
         ;;
     *)
@@ -51,6 +51,15 @@ def upstream_url(path):
 
 def revision(path):
     return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.revision']).rstrip('\n')
+
+def set_upstream_type(path, type):
+    call(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamtype', type])
+
+def set_upstream_url(path, url):
+    call(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamurl', url])
+
+def set_revision(path, revision):
+    call(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.revision', revision])
 
 def upstream_init(path):
     if not is_submodule(path):
@@ -194,6 +203,36 @@ def main(*args):
             modules = list_submodules()
             for module in modules:
                 print module
+        elif command == 'add':
+            url = args[2]
+            path = args[3]
+
+            if len(args)>4:
+                upstreamurl = args[4]
+            else:
+                upstreamurl = url
+
+            if len(args)>5:
+                type = args[5]
+            else:
+                type = 'git'
+
+            if type == 'svn':
+                revision = 'trunk'
+            elif type == 'git':
+                revision = 'master'
+            elif type == 'hg':
+                revision = 'master'
+            else:
+                print 'Error: unknown upstream repository type ' + type
+
+            if len(args)>6:
+                revision = args[6]
+
+            call(['git', 'submodule', 'add', url, path])
+            set_upstream_url(path, upstreamurl)
+            set_upstream_type(path, type)
+            set_revision(path, revision)
         elif command == 'mv':
             print 'Moving submodule ' + args[2] + ' to ' + args[3]
             mv_submodule(args[2], args[3])
