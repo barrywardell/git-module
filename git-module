@@ -13,12 +13,12 @@ bash_completion_text ='''
 _git_module () { local cur prev
     _get_comp_words_by_ref -n =: cur prev
     case "$prev" in
-    init-upstream|rm|mv|checkout|update)
+    init-upstream|rm|mv|checkout|update|fetch)
 	    __gitcomp "$(git module ls)"
     	return
 	    ;;
     git-module|module)
-        __gitcomp "add checkout init-upstream ls mv rm setup update"
+        __gitcomp "add checkout fetch init-upstream ls mv rm setup update"
         return
         ;;
     *)
