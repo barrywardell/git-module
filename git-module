@@ -105,7 +105,7 @@ def mv_submodule(old, new):
     call(['git', 'add', new])
     call(['git', 'add', '.gitmodules'])
 
-def mv_submodule(old):
+def rm_submodule(old):
     if not is_submodule(old):
         print('Error: ' + old + ' is not a submodule.')
         return
@@ -264,7 +264,7 @@ def main(*args):
             mv_submodule(args[2], args[3])
         elif command == 'rm':
             print 'Removing submodule ' + args[2]
-            rm_submodule(args[2], args[3])
+            rm_submodule(args[2])
         else:
             print 'Unknown command ' + command
     except:
