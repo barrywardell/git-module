@@ -7,7 +7,7 @@ import pprint
 import sys
 import os
 import re
-from subprocess import check_output, call
+import subprocess
 
 bash_completion_text ='''
 _git_module () { local cur prev
@@ -27,6 +27,12 @@ _git_module () { local cur prev
     esac
 }
 '''
+
+def call(x):
+    subprocess.call(x)
+
+def check_output(x):
+    return subprocess.Popen(x, stdout=subprocess.PIPE).communicate()[0]
 
 def num_lines(test):
     for i, l in enumerate(test.split('\n')):
