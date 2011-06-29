@@ -28,11 +28,11 @@ _git_module () { local cur prev
 }
 '''
 
-def call(x):
-    subprocess.call(x)
+def call(x, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0):
+    subprocess.call(x, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags)
 
-def check_output(x):
-    return subprocess.Popen(x, stdout=subprocess.PIPE).communicate()[0]
+def check_output(x, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0):
+    return subprocess.Popen(x, bufsize, executable, stdin, subprocess.PIPE, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags).communicate()[0]
 
 def num_lines(test):
     for i, l in enumerate(test.split('\n')):
@@ -153,6 +153,15 @@ def checkout_modules(modules):
         print '  ' + module + ': ' + rev
         call(['git', git_dir, work_tree, 'checkout', '-q', rev])
 
+def pull_ff(modules):
+    print 'Updating local branches where possible:'
+    for module in modules:
+        rev = revision(module)
+        git_dir = '--git-dir=' + os.path.join(module, '.git')
+        work_tree = '--work-tree=' + module
+        print '  ' + module + ': ' + rev
+        call(['git', 'pull', '--ff-only', '-q'], cwd=module)
+
 def fetch_modules(modules):
     print 'Getting updates for submodules:'
     for module in modules:
@@ -218,6 +227,7 @@ def main(*args):
                 modules = args[2:]
             fetch_modules(modules)
             checkout_modules(modules)
+            pull_ff(modules)
         elif command == 'fetch':
             if args[2] == '--all':
                 modules = list_submodules()
