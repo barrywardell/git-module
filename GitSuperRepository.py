@@ -176,6 +176,8 @@ class GitSuperRepository():
         """Checkout a list of submodules to the branches they should be tracking."""
         print 'Checking out branches in submodules:'
         for module in modules:
+            if not self.is_submodule(module):
+                raise ValueError
             rev = self.revision(module)
             git_dir = '--git-dir=' + os.path.join(module, '.git')
             work_tree = '--work-tree=' + module
