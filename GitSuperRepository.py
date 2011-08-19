@@ -1,7 +1,4 @@
-# gitsubmodules.py
-#
-# A collection of python functions for simplifying the management of a
-# git repository containing submodules
+# GitSuperRepository.py
 #
 # Copyright (C) 2011 Barry Wardell <barry.wardell@gmail.com>
 #
@@ -18,8 +15,8 @@
 # with this library; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 
-"""A collection of python tools for simplifying the management of
-   git submodules"""
+"""A class for simplifying the management of a git repository containing
+   submodules which may be stored upstream in various version control systems"""
 
 import pprint, sys, os, re
 from subprocess import call
