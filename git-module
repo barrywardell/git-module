@@ -41,6 +41,7 @@ _git_module () { local cur prev
 '''
 
 def main(*args):
+    sr = GitSuperRepository()
     try:
         if not os.path.isfile('.gitmodules'):
             print 'You need to run this command from the toplevel of the working tree.'
@@ -77,34 +78,34 @@ def main(*args):
             else:
                 print "Not replacing ~/.profile with ~/.profile.tmp for safety. Replace it manually if it looks OK."
 
-            checkout_modules(list_submodules())
+            checkout_modules(sr.list_submodules())
         elif command == 'init-upstream':
             if args[2] == '--all':
-                modules = list_submodules()
+                modules = sr.list_submodules()
             else:
                 modules = args[2:]
             path = args[2]
-            upstream_init(path)
+            sr.upstream_init(path)
         elif command == 'checkout':
             if args[2] == '--all':
-                modules = list_submodules()
+                modules = sr.list_submodules()
             else:
                 modules = args[2:]
-            checkout_modules(modules)
+            sr.checkout_modules(modules)
         elif command == 'update':
             if args[2] == '--all':
-                modules = list_submodules()
+                modules = sr.list_submodules()
             else:
                 modules = args[2:]
-            fetch_modules(modules)
-            checkout_modules(modules)
-            pull_ff(modules)
+            sr.fetch_modules(modules)
+            sr.checkout_modules(modules)
+            sr.pull_ff(modules)
         elif command == 'fetch':
             if args[2] == '--all':
-                modules = list_submodules()
+                modules = sr.list_submodules()
             else:
                 modules = args[2:]
-            fetch_modules(modules)
+            sr.fetch_modules(modules)
         elif command == 'config':
             module = args[2]
             configvar = args[3]
@@ -113,7 +114,7 @@ def main(*args):
             else:
                 call(['git', 'config', '--file=.gitmodules', 'submodule.'+module+'.'+configvar])
         elif command == 'ls':
-            modules = list_submodules()
+            modules = sr.list_submodules()
             for module in modules:
                 print module
         elif command == 'add':
@@ -143,15 +144,15 @@ def main(*args):
                 revision = args[6]
 
             call(['git', 'submodule', 'add', url, path])
-            set_upstream_url(path, upstreamurl)
-            set_upstream_type(path, type)
-            set_revision(path, revision)
+            sr.set_upstream_url(path, upstreamurl)
+            sr.set_upstream_type(path, type)
+            sr.set_revision(path, revision)
         elif command == 'mv':
             print 'Moving submodule ' + args[2] + ' to ' + args[3]
-            mv_submodule(args[2], args[3])
+            sr.mv_submodule(args[2], args[3])
         elif command == 'rm':
             print 'Removing submodule ' + args[2]
-            rm_submodule(args[2])
+            sr.rm_submodule(args[2])
         else:
             print 'Unknown command ' + command
     except:
