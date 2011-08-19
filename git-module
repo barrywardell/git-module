@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
-# module
-# A tool for managing git submodules
+# git-module
+# A tool for simplifying the management of git submodules
 
-import pprint
-import sys
-import os
-import re
-import subprocess
+import pprint, subprocess, sys, os, re
+from subprocess import call
+
+def check_output(x, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0):
+    """Emulate the check_output function provided in newer versions of Python"""
+    return subprocess.Popen(x, bufsize, executable, stdin, subprocess.PIPE, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags).communicate()[0]
 
 bash_completion_text ='''
 _git_module () { local cur prev
@@ -28,18 +29,14 @@ _git_module () { local cur prev
 }
 '''
 
-def call(x, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0):
-    subprocess.call(x, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags)
-
-def check_output(x, bufsize=0, executable=None, stdin=None, stdout=None, stderr=None, preexec_fn=None, close_fds=False, shell=False, cwd=None, env=None, universal_newlines=False, startupinfo=None, creationflags=0):
-    return subprocess.Popen(x, bufsize, executable, stdin, subprocess.PIPE, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags).communicate()[0]
-
 def num_lines(test):
+    """Count the number of lines in a string."""
     for i, l in enumerate(test.split('\n')):
         pass
     return i + 1
 
 def is_submodule(path):
+    """Check if path is a submodule."""
     output = check_output(['git', 'ls-files', '--stage', '--', path]).rstrip('\n')
     if(num_lines(output) != 1):
         return False
@@ -49,32 +46,40 @@ def is_submodule(path):
         return False
 
 def upstream_type(path):
+    """Get version control system used by upstream repository."""
     return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamtype']).rstrip('\n')
 
 def upstream_url(path):
+    """Get URL of upstream repository."""
     return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamurl']).rstrip('\n')
 
 def revision(path):
+    """Get branch of upstream repository which should be tracked by a submodule."""
     return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.revision']).rstrip('\n')
 
 def set_upstream_type(path, type):
+    """Set version control system used by upstream repository."""
     call(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamtype', type])
 
 def set_upstream_url(path, url):
+    """Set URL of upstream repository."""
     call(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamurl', url])
 
 def set_revision(path, revision):
+    """Set branch of upstream repository which should be tracked by a submodule."""
     call(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.revision', revision])
 
 def upstream_init(path):
+    """Initialise a submodule for pushing patches upstream."""
     if not is_submodule(path):
         print('Error: ' + path + ' is not a submodule.')
         return
 
     path = path.rstrip('/')
     type = upstream_type(path)
-    url = upstream_url(path)
-    git_dir = '--git-dir=' + os.path.join(path, '.git')
+    url  = upstream_url(path)
+
+    git_dir   = '--git-dir=' + os.path.join(path, '.git')
     work_tree = '--work-tree=' + path
     
     print 'Initialising submodule ' + type + ' upstream repository for ' + path + '\nwith upstream URL ' + url
@@ -100,6 +105,7 @@ def upstream_init(path):
     return
 
 def mv_submodule(old, new):
+    """Move a submodule."""
     if not is_submodule(old):
         print('Error: ' + old + ' is not a submodule.')
         return
@@ -112,6 +118,7 @@ def mv_submodule(old, new):
     call(['git', 'add', '.gitmodules'])
 
 def rm_submodule(old):
+    """Remove a submodule."""
     if not is_submodule(old):
         print('Error: ' + old + ' is not a submodule.')
         return
@@ -121,6 +128,7 @@ def rm_submodule(old):
     call(['git', 'add', '.gitmodules'])
 
 def init_module(path):
+    """Initialise a submodule."""
     if not is_submodule(old):
         print('Error: ' + old + ' is not a submodule.')
         return
@@ -134,6 +142,7 @@ def init_module(path):
     call(['git', git_dir, work_tree, 'checkout', rev])
 
 def list_submodules():
+    """List all submodules."""
     f = open('.gitmodules')
     pattern = re.compile('\[submodule "(.*)"]')
     modules = []
@@ -145,6 +154,7 @@ def list_submodules():
     return modules
 
 def checkout_modules(modules):
+    """Checkout a list of submodules to the branches they should be tracking."""
     print 'Checking out branches in submodules:'
     for module in modules:
         rev = revision(module)    
@@ -154,6 +164,7 @@ def checkout_modules(modules):
         call(['git', git_dir, work_tree, 'checkout', '-q', rev])
 
 def pull_ff(modules):
+    """Do a fast-forward only pull of a list of submodules."""
     print 'Updating local branches where possible:'
     for module in modules:
         rev = revision(module)
@@ -163,6 +174,7 @@ def pull_ff(modules):
         call(['git', 'pull', '--ff-only', '-q'], cwd=module)
 
 def fetch_modules(modules):
+    """Fetch a list of submodules from their remotes."""
     print 'Getting updates for submodules:'
     for module in modules:
         git_dir = '--git-dir=' + os.path.join(module, '.git')
