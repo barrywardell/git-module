@@ -16,7 +16,8 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 
 """A class for simplifying the management of a git repository containing
-   submodules which may be stored upstream in various version control systems"""
+   submodules which may be stored upstream in various version control systems,
+   including git, mercurial and svn."""
 
 import pprint, sys, os, re
 from subprocess import call
