@@ -47,7 +47,7 @@ class GitSuperRepository():
         if not os.path.isdir(self.__git_dir):
             raise ValueError(self.__git_dir + ' is not a git repository')
 
-    def num_lines(self, test):
+    def __num_lines(self, test):
         """Count the number of lines in a string."""
         for i, l in enumerate(test.split('\n')):
             pass
@@ -56,7 +56,7 @@ class GitSuperRepository():
     def is_submodule(self, path):
         """Check if path is a submodule."""
         output = check_output(['git', 'ls-files', '--stage', '--', path]).rstrip('\n')
-        if(num_lines(output) != 1):
+        if(self.__num_lines(output) != 1):
             return False
         if output[0:6] == '160000':
             return True
