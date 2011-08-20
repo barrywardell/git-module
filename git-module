@@ -111,9 +111,9 @@ def main(*args):
             module = args[2]
             configvar = args[3]
             if len(args) > 4:
-                call(['git', 'config', '--file=.gitmodules', 'submodule.'+module+'.'+configvar, args[4]])
+                sr.set_module_config(module, configvar, args[4])
             else:
-                call(['git', 'config', '--file=.gitmodules', 'submodule.'+module+'.'+configvar])
+                print sr.get_module_config(module, configvar)
         elif command == 'ls':
             modules = sr.list_submodules()
             for module in modules:
@@ -144,7 +144,7 @@ def main(*args):
             if len(args)>6:
                 revision = args[6]
 
-            call(['git', 'submodule', 'add', url, path])
+            sr.git_command(['submodule', 'add', url, path])
             sr.set_upstream_url(path, upstreamurl)
             sr.set_upstream_type(path, type)
             sr.set_revision(path, revision)
