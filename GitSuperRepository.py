@@ -54,9 +54,31 @@ class GitSuperRepository():
             pass
         return i + 1
 
+    def git_command(self, command):
+        """Execute a git command on the repository."""
+        git_dir   = '--git-dir=' + self.__git_dir
+        return check_output(['git', git_dir] + command).rstrip('\n')
+
+    def config(self, command):
+        """Configure an option for the repository."""
+        return self.git_command(['config'] + command)
+
+    def module_config(self, command):
+        """Configure an option in the .gitmodules file."""
+        return self.git_command(['config', '--file=.gitmodules'] + command)
+
+    def get_module_config(self, module, option):
+        """Get an option for a submodule."""
+        return self.module_config(['submodule.' + module + '.' + option])
+
+    def set_module_config(self, module, option, value):
+        """Set an option for a submodule."""
+        return self.module_config(['submodule.' + module + '.' + option, value])
+
     def is_submodule(self, path):
         """Check if path is a submodule."""
-        output = check_output(['git', 'ls-files', '--stage', '--', path]).rstrip('\n')
+        output = self.git_command(['ls-files', '--stage', '--', path])
+
         if(self.__num_lines(output) != 1):
             return False
         if output[0:6] == '160000':
@@ -66,27 +88,27 @@ class GitSuperRepository():
 
     def upstream_type(self, path):
         """Get version control system used by upstream repository."""
-        return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamtype']).rstrip('\n')
+        return self.get_module_config(path, 'upstreamtype')
 
     def upstream_url(self, path):
         """Get URL of upstream repository."""
-        return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamurl']).rstrip('\n')
+        return self.get_module_config(path, 'upstreamurl')
 
     def revision(self, path):
         """Get branch of upstream repository which should be tracked by a submodule."""
-        return check_output(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.revision']).rstrip('\n')
+        return self.get_module_config(path, 'revision')
 
     def set_upstream_type(self, path, type):
         """Set version control system used by upstream repository."""
-        call(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamtype', type])
+        self.set_module_config(path, 'upstreamtype', type)
 
     def set_upstream_url(self, path, url):
         """Set URL of upstream repository."""
-        call(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.upstreamurl', url])
+        self.set_module_config(path, 'upstreamurl', url)
 
     def set_revision(self, path, revision):
         """Set branch of upstream repository which should be tracked by a submodule."""
-        call(['git', 'config', '--file=.gitmodules', 'submodule.'+path+'.revision', revision])
+        self.set_module_config(path, 'revision', revision)
 
     def upstream_init(self, path):
         """Initialise a submodule for pushing patches upstream."""
@@ -105,11 +127,11 @@ class GitSuperRepository():
 
         if type == 'svn':
             rev = self.revision(path)
-            call(['git', git_dir, work_tree, 'checkout', rev])
-            call(['git', git_dir, work_tree, 'svn', 'init', '-s', '--prefix=origin/', url])
-            call(['git', git_dir, work_tree, 'svn', 'fetch'])
+            self.git_command([work_tree, 'checkout', rev])
+            self.git_command([work_tree, 'svn', 'init', '-s', '--prefix=origin/', url])
+            self.git_command([work_tree, 'svn', 'fetch'])
         elif type == 'git':
-            call(['git', git_dir, work_tree, 'remote', 'add', 'upstream', url])
+            self.git_command([work_tree, 'remote', 'add', 'upstream', url])
         elif type == 'hg':
             hgpath = path+'.hg'
             call(['hg', 'clone', url, hgpath])
@@ -128,23 +150,23 @@ class GitSuperRepository():
         if not self.is_submodule(old):
             print('Error: ' + old + ' is not a submodule.')
             return
-        call(['git', 'config', '--rename-section', 'submodule.'+old, 'submodule.'+new])
-        call(['git', 'config', '-f', '.gitmodules', '--rename-section', 'submodule.'+old, 'submodule.'+new])
-        call(['git', 'config', '-f', '.gitmodules', 'submodule.'+new+'.path', new])
-        call(['git', 'rm', '--cached', old])
+        self.config(['--rename-section', 'submodule.'+old, 'submodule.'+new])
+        self.module_config(['--rename-section', 'submodule.'+old, 'submodule.'+new])
+        self.module_config(['submodule.'+new+'.path', new])
+        self.git_command(['rm', '--cached', old])
         os.rename(old, new)
-        call(['git', 'add', new])
-        call(['git', 'add', '.gitmodules'])
+        self.git_command(['add', new])
+        self.git_command(['add', '.gitmodules'])
 
     def rm_submodule(self, old):
         """Remove a submodule."""
         if not self.is_submodule(old):
             print('Error: ' + old + ' is not a submodule.')
             return
-        call(['git', 'config', '--remove-section', 'submodule.'+old])
-        call(['git', 'config', '-f', '.gitmodules', '--remove-section', 'submodule.'+old])
-        call(['git', 'rm', '--cached', old])
-        call(['git', 'add', '.gitmodules'])
+        self.config(['--remove-section', 'submodule.'+old])
+        self.module_config(['--remove-section', 'submodule.'+old])
+        self.git_command(['rm', '--cached', old])
+        self.git_command(['add', '.gitmodules'])
 
     def init_module(self, path):
         """Initialise a submodule."""
