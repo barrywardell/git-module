@@ -60,11 +60,11 @@ class GitSuperRepository():
         return check_output(['git', git_dir] + command).rstrip('\n')
 
     def config(self, command):
-        """Configure an option for the repository."""
+        """Configure the repository."""
         return self.git_command(['config'] + command)
 
     def module_config(self, command):
-        """Configure an option in the .gitmodules file."""
+        """Configure the .gitmodules file."""
         return self.git_command(['config', '--file=.gitmodules'] + command)
 
     def get_module_config(self, module, option):
