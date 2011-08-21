@@ -54,9 +54,13 @@ class GitSuperRepository():
             pass
         return i + 1
 
-    def git_command(self, command):
+    def git_command(self, command, module=None):
         """Execute a git command on the repository."""
-        git_dir   = '--git-dir=' + self.__git_dir
+        if module == None:
+            git_dir   = '--git-dir=' + self.__git_dir
+        else:
+            git_dir   = '--git-dir=' + os.path.join(module, '.git')
+
         return check_output(['git', git_dir] + command).rstrip('\n')
 
     def config(self, command):
@@ -120,18 +124,17 @@ class GitSuperRepository():
         type = self.upstream_type(path)
         url  = self.upstream_url(path)
 
-        git_dir   = '--git-dir=' + os.path.join(path, '.git')
         work_tree = '--work-tree=' + path
 
         print 'Initialising submodule ' + type + ' upstream repository for ' + path + '\nwith upstream URL ' + url
 
         if type == 'svn':
             rev = self.revision(path)
-            self.git_command([work_tree, 'checkout', rev])
-            self.git_command([work_tree, 'svn', 'init', '-s', '--prefix=origin/', url])
-            self.git_command([work_tree, 'svn', 'fetch'])
+            self.git_command([work_tree, 'checkout', rev], module=path)
+            self.git_command([work_tree, 'svn', 'init', '-s', '--prefix=origin/', url], module=path)
+            self.git_command([work_tree, 'svn', 'fetch'], module=path)
         elif type == 'git':
-            self.git_command([work_tree, 'remote', 'add', 'upstream', url])
+            self.git_command([work_tree, 'remote', 'add', 'upstream', url], module=path)
         elif type == 'hg':
             hgpath = path+'.hg'
             call(['hg', 'clone', url, hgpath])
