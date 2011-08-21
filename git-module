@@ -85,8 +85,7 @@ def main(*args):
                 modules = sr.list_submodules()
             else:
                 modules = args[2:]
-            path = args[2]
-            sr.upstream_init(path)
+            map(sr.upstream_init, modules)
         elif command == 'checkout':
             if len(args) < 3 or args[2] == '--all':
                 modules = sr.list_submodules()
