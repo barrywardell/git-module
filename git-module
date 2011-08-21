@@ -81,20 +81,20 @@ def main(*args):
 
             checkout_modules(sr.list_submodules())
         elif command == 'init-upstream':
-            if args[2] == '--all':
+            if len(args) < 3 or args[2] == '--all':
                 modules = sr.list_submodules()
             else:
                 modules = args[2:]
             path = args[2]
             sr.upstream_init(path)
         elif command == 'checkout':
-            if args[2] == '--all':
+            if len(args) < 3 or args[2] == '--all':
                 modules = sr.list_submodules()
             else:
                 modules = args[2:]
             sr.checkout_modules(modules)
         elif command == 'update':
-            if args[2] == '--all':
+            if len(args) < 3 or args[2] == '--all':
                 modules = sr.list_submodules()
             else:
                 modules = args[2:]
@@ -102,7 +102,7 @@ def main(*args):
             sr.checkout_modules(modules)
             sr.pull_ff(modules)
         elif command == 'fetch':
-            if args[2] == '--all':
+            if len(args) < 3 or args[2] == '--all':
                 modules = sr.list_submodules()
             else:
                 modules = args[2:]
