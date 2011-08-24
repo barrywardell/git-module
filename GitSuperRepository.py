@@ -172,18 +172,6 @@ class GitSuperRepository():
         self.git_command(['rm', '--cached', old])
         self.git_command(['add', '.gitmodules'])
 
-    def init_module(self, path):
-        """Initialise a submodule."""
-        self.assert_is_submodule(path)
-        path = path.rstrip('/')
-        git_dir = '--git-dir=' + os.path.join(path, '.git')
-        work_tree = '--work-tree=' + path
-
-        print 'Initialising submodule ' + path
-
-        rev = self.revision(path)
-        call(['git', git_dir, work_tree, 'checkout', rev])
-
     def list_submodules(self):
         """List all submodules."""
         f = open('.gitmodules')
