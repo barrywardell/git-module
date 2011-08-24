@@ -168,7 +168,7 @@ class GitSuperRepository():
         """Remove a submodule."""
         self.assert_is_submodule(old)
         self.config(['--remove-section', 'submodule.'+old])
-        self.module_config(['--remove-section', 'submodule.'+old])
+        self.config(['--remove-section', 'submodule.'+old], file='.gitmodules')
         self.git_command(['rm', '--cached', old])
         self.git_command(['add', '.gitmodules'])
 
