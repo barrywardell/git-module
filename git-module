@@ -117,6 +117,20 @@ def main(*args):
             modules = sr.list_submodules()
             for module in modules:
                 print module
+        elif command == 'summary':
+            if len(args) < 3 or args[2] == '--all':
+                modules = sr.list_submodules()
+            else:
+                modules = args[2:]
+            for module in modules:
+                branches = sr.list_branches(module)
+                for branch in branches:
+                    branch_status = sr.remote_status(module, branch)
+                    if branch_status != []:
+                        print module + ': ' + branch
+                        for branch_commit in branch_status:
+                            print branch_commit
+                        print ''
         elif command == 'add':
             url = args[2]
             path = args[3]

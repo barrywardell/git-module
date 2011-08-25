@@ -184,6 +184,26 @@ class GitSuperRepository():
         f.close()
         return modules
 
+    def list_branches(self, module=None):
+        res = self.git_command(['branch', '--no-color'], module).splitlines()
+        branches = []
+        for branch in res:
+            branchname = branch.strip(' *')
+            if branchname != '(no branch)':
+                branches.append(branch.strip(' *'))
+        return branches
+
+    def remote_status(self, module, branch):
+        try:
+            remote = self.config(['branch.'+branch+'.remote'], module)
+        except:
+            # If the branch doesn't have a remote then return an empty list
+            return []
+        remote_ref = self.config(['branch.'+branch+'.merge'], module)
+        remote_branch = re.sub('^refs/heads/', '', remote_ref)
+        return self.git_command(['rev-list', '--oneline', '--left-right',
+            branch+'...'+remote+'/'+remote_branch], module).splitlines()
+
     def checkout_modules(self, modules):
         """Checkout a list of submodules to the branches they should be tracking."""
         print 'Checking out branches in submodules:'
