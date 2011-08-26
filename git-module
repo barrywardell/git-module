@@ -21,6 +21,7 @@
 
 from GitSuperRepository import GitSuperRepository
 import sys, os
+import argparse
 
 bash_completion_text ='''
 _git_module () { local cur prev
@@ -41,134 +42,189 @@ _git_module () { local cur prev
 }
 '''
 
-def main(*args):
-    sr = GitSuperRepository()
-    try:
-        if not os.path.isfile('.gitmodules'):
-            print 'You need to run this command from the toplevel of the working tree.'
-            return 1
+_version = '0.1'
 
-        command = args[1]
-        
-        if command == 'setup':
-            bindir = os.path.join(os.getcwd(),'bin')
-            f = open(os.path.expanduser('~/.profile'), 'r')
-            tmp = open(os.path.expanduser('~/.profile.tmp'), 'w')
+sr = GitSuperRepository()
+
+def setup(args):
+    bindir = os.path.join(os.getcwd(),'bin')
+    f = open(os.path.expanduser('~/.profile'), 'r')
+    tmp = open(os.path.expanduser('~/.profile.tmp'), 'w')
+    addLine = True
+    for line in f:
+        if line == '# Begin git-module section\n':
+            addLine = False
+            continue
+        elif line == '# End git-module section\n':
             addLine = True
-            for line in f:
-                if line == '# Begin git-module section\n':
-                    addLine = False
-                    continue
-                elif line == '# End git-module section\n':
-                    addLine = True
-                    continue
-                if addLine:
-                    tmp.write(line)
-            f.close()
+            continue
+        if addLine:
+            tmp.write(line)
+    f.close()
 
-            print 'Adding git-module section to ~/.profile'
-            if(line[-1] != '\n'):
-                tmp.write('\n')
-            tmp.write('# Begin git-module section\n')
-            tmp.write('export PATH=' + bindir + ':$PATH\n')
-            tmp.write(bash_completion_text)
-            tmp.write('# End git-module section\n')
-            tmp.close()
-            if addLine == True:
-                os.rename(os.path.expanduser('~/.profile.tmp'), os.path.expanduser('~/.profile'))
-            else:
-                print "Not replacing ~/.profile with ~/.profile.tmp for safety. Replace it manually if it looks OK."
-        elif command == 'init-upstream':
-            if len(args) < 3 or args[2] == '--all':
-                modules = sr.list_submodules()
-            else:
-                modules = args[2:]
-            map(sr.upstream_init, modules)
-        elif command == 'checkout':
-            if len(args) < 3 or args[2] == '--all':
-                modules = sr.list_submodules()
-            else:
-                modules = args[2:]
-            sr.checkout_modules(modules)
-        elif command == 'update':
-            if len(args) < 3 or args[2] == '--all':
-                modules = sr.list_submodules()
-            else:
-                modules = args[2:]
-            sr.fetch_modules(modules)
-            sr.checkout_modules(modules)
-            sr.pull_ff(modules)
-        elif command == 'fetch':
-            if len(args) < 3 or args[2] == '--all':
-                modules = sr.list_submodules()
-            else:
-                modules = args[2:]
-            sr.fetch_modules(modules)
-        elif command == 'config':
-            module = args[2]
-            configvar = args[3]
-            if len(args) > 4:
-                sr.set_module_config(module, configvar, args[4])
-            else:
-                print sr.get_module_config(module, configvar)
-        elif command == 'ls':
-            modules = sr.list_submodules()
-            for module in modules:
-                print module
-        elif command == 'summary':
-            if len(args) < 3 or args[2] == '--all':
-                modules = sr.list_submodules()
-            else:
-                modules = args[2:]
-            for module in modules:
-                branches = sr.list_branches(module)
-                for branch in branches:
-                    branch_status = sr.remote_status(module, branch)
-                    if branch_status != []:
-                        print module + ': ' + branch
-                        for branch_commit in branch_status:
-                            print branch_commit
-                        print ''
-        elif command == 'add':
-            url = args[2]
-            path = args[3]
-
-            if len(args)>4:
-                upstreamurl = args[4]
-            else:
-                upstreamurl = url
-
-            if len(args)>5:
-                type = args[5]
-            else:
-                type = 'git'
-
-            if type == 'svn':
-                revision = 'trunk'
-            elif type == 'git':
-                revision = 'master'
-            elif type == 'hg':
-                revision = 'master'
-            else:
-                print 'Error: unknown upstream repository type ' + type
-
-            if len(args)>6:
-                revision = args[6]
-
-            sr.add_submodule(path, url, upstreamurl, type, revision)
-        elif command == 'mv':
-            print 'Moving submodule ' + args[2] + ' to ' + args[3]
-            sr.mv_submodule(args[2], args[3])
-        elif command == 'rm':
-            print 'Removing submodule ' + args[2]
-            sr.rm_submodule(args[2])
-        else:
-            print 'Unknown command ' + command
-    except:
-        print 'Except', sys.exc_info()
-        pass
+    print 'Adding git-module section to ~/.profile'
+    if(line[-1] != '\n'):
+        tmp.write('\n')
+    tmp.write('# Begin git-module section\n')
+    tmp.write('export PATH=' + bindir + ':$PATH\n')
+    tmp.write(bash_completion_text)
+    tmp.write('# End git-module section\n')
+    tmp.close()
+    if addLine == True:
+        os.rename(os.path.expanduser('~/.profile.tmp'), os.path.expanduser('~/.profile'))
     else:
-        return 0 # exit errorlessly
- 
+        print "Not replacing ~/.profile with ~/.profile.tmp for safety. Replace it manually if it looks OK."
+
+def init_upstream(args):
+    modules = args.modules
+    if modules == []:
+        modules = sr.list_submodules()
+    map(sr.upstream_init, modules)
+
+def checkout(args):
+    modules = args.modules
+    if modules == []:
+        modules = sr.list_submodules()
+    sr.checkout_modules(modules)
+
+def update(args):
+    modules = args.modules
+    if modules == []:
+        modules = sr.list_submodules()
+    sr.fetch_modules(modules)
+    sr.checkout_modules(modules)
+    sr.pull_ff(modules)
+
+def fetch(args):
+    modules = args.modules
+    if modules == []:
+        modules = sr.list_submodules()
+    sr.fetch_modules(modules)
+
+def config(args):
+    module = args.module
+    configvar = args.var
+    if args.val != None:
+        sr.set_module_config(module, configvar, args.val)
+    else:
+        print sr.get_module_config(module, configvar)
+
+def ls(args):
+    modules = sr.list_submodules()
+    for module in modules:
+        print module
+
+def summary(args):
+    modules = args.modules
+    if modules == []:
+        modules = sr.list_submodules()
+
+    for module in modules:
+        branches = sr.list_branches(module)
+        for branch in branches:
+            branch_status = sr.remote_status(module, branch)
+            if branch_status != []:
+                print module + ': ' + branch
+                for branch_commit in branch_status:
+                    print branch_commit
+                print ''
+
+def add(args):
+    sr.add_submodule(args.module, args.url, args.upstreamurl, args.type, args.revision)
+
+def mv(args):
+    print 'Moving submodule ' + args.module + ' to ' + args.new
+    sr.mv_submodule(args.module, args.new)
+
+def rm(args):
+    print 'Removing submodule ' + args.module
+    sr.rm_submodule(args.module)
+
+def main(*args):
+    # We use argparse to parse the command line options
+    parser = argparse.ArgumentParser(description =
+        'A tool for simplifying the management of git submodules.')
+
+    parser.add_argument('--version', '-v', action='version',
+        version='%(prog)s ' + _version)
+
+    subparsers = parser.add_subparsers(help='must be one of the following subcommands:',
+        metavar='command')
+
+    # parent parser for options which operate on multiple modules
+    parent_modules = argparse.ArgumentParser(add_help=False)
+    parent_modules.add_argument('modules', nargs='*', metavar='module',
+        help='modules to operate on')
+
+    # setup
+    parser_setup = subparsers.add_parser('setup', help='setup git-module')
+    parser_setup.set_defaults(func=setup)
+
+    # init-upstream
+    parser_init_upstream = subparsers.add_parser('init-upstream',
+        parents=[parent_modules], help='initialize modules for pushing upstream')
+    parser_init_upstream.set_defaults(func=init_upstream)
+
+    # checkout
+    parser_checkout = subparsers.add_parser('checkout',
+        parents=[parent_modules], help='checkout modules to their tracked branches')
+    parser_checkout.set_defaults(func=checkout)
+
+    # update
+    parser_update = subparsers.add_parser('update',
+        parents=[parent_modules], help='run fetch and then checkout')
+    parser_update.set_defaults(func=update)
+
+    # fetch
+    parser_fetch = subparsers.add_parser('fetch',
+        parents=[parent_modules], help='fetch modules from upstream')
+    parser_fetch.set_defaults(func=fetch)
+
+    # summary
+    parser_summary = subparsers.add_parser('summary',
+        parents=[parent_modules], help='summarize the status of submodules')
+    parser_summary.set_defaults(func=summary)
+
+    # parent parser for options which operate a singule module
+    parent_module = argparse.ArgumentParser(add_help=False)
+    parent_module.add_argument('module', help='module to operate on')
+
+    # config
+    parser_config = subparsers.add_parser('config',
+        parents=[parent_module], help='configure a module')
+    parser_config.set_defaults(func=config)
+    parser_config.add_argument('var', help='variable to configure')
+    parser_config.add_argument('val', nargs='?', help='new value for variable')
+
+    # add
+    parser_add = subparsers.add_parser('add',
+        parents=[parent_module], help='add a submodule')
+    parser_add.set_defaults(func=add)
+    parser_add.add_argument('url', help='URL to get the new submodule from')
+    parser_add.add_argument('path',
+        help='local path where the new submodule should be created')
+    parser_add.add_argument('upstreamurl', help='upstream URL where changes should be pushed to')
+    parser_add.add_argument('type', help='version control system used upstream')
+    parser_add.add_argument('revision', help='branch to track')
+
+    # mv
+    parser_mv = subparsers.add_parser('mv',
+        parents=[parent_module], help='move a submodule')
+    parser_mv.set_defaults(func=mv)
+    parser_mv.add_argument('new', help='new path to module')
+
+    # rm
+    parser_rm = subparsers.add_parser('rm',
+        parents=[parent_module], help='remove a submodule')
+    parser_rm.set_defaults(func=rm)
+
+    # ls
+    parser_ls = subparsers.add_parser('ls',
+        help='list all submodules')
+    parser_ls.set_defaults(func=ls)
+
+    args = parser.parse_args()
+    args.func(args)
+
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
