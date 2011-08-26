@@ -157,10 +157,7 @@ def main(*args):
             if len(args)>6:
                 revision = args[6]
 
-            sr.git_command(['submodule', 'add', url, path])
-            sr.set_upstream_url(path, upstreamurl)
-            sr.set_upstream_type(path, type)
-            sr.set_revision(path, revision)
+            sr.add_submodule(path, url, upstreamurl, type, revision)
         elif command == 'mv':
             print 'Moving submodule ' + args[2] + ' to ' + args[3]
             sr.mv_submodule(args[2], args[3])

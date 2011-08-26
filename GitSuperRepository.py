@@ -172,6 +172,14 @@ class GitSuperRepository():
         self.git_command(['rm', '--cached', old])
         self.git_command(['add', '.gitmodules'])
 
+    def add_submodule(self, path, url, upstreamurl, type, revision):
+        """Add a submodule."""
+        check_output(['git', 'submodule', 'add', url, path])
+        self.set_upstream_url(path, upstreamurl)
+        self.set_upstream_type(path, type)
+        self.set_revision(path, revision)
+        self.git_command(['add', '.gitmodules'])
+
     def list_submodules(self):
         """List all submodules."""
         f = open('.gitmodules')
