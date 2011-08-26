@@ -78,8 +78,6 @@ def main(*args):
                 os.rename(os.path.expanduser('~/.profile.tmp'), os.path.expanduser('~/.profile'))
             else:
                 print "Not replacing ~/.profile with ~/.profile.tmp for safety. Replace it manually if it looks OK."
-
-            checkout_modules(sr.list_submodules())
         elif command == 'init-upstream':
             if len(args) < 3 or args[2] == '--all':
                 modules = sr.list_submodules()
