@@ -46,6 +46,18 @@ _version = '0.1'
 
 sr = GitSuperRepository()
 
+class colours:
+    BOLD    = "\033[1m"
+    BLACK   = '\033[32m'
+    RED     = '\033[32m'
+    GREEN   = '\033[32m'
+    WARNING = '\033[33m'
+    BLUE    = '\033[34m'
+    MAGENTA = '\033[35m'
+    CYAN    = '\033[36m'
+    WHITE   = '\033[37m'
+    ENDC    = '\033[0m'
+
 def setup(args):
     bindir = os.path.join(os.getcwd(),'bin')
     f = open(os.path.expanduser('~/.profile'), 'r')
@@ -123,11 +135,19 @@ def summary(args):
         branches = sr.list_branches(module)
         for branch in branches:
             branch_status = sr.remote_status(module, branch)
-            if branch_status != []:
-                print module + ': ' + branch
-                for branch_commit in branch_status:
-                    print branch_commit
-                print ''
+            if branch_status == None or \
+                (len(branch_status['only-upstream'])
+                  + len(branch_status['only-downstream'])) == 0:
+                continue
+
+            print module + ': ' + branch
+            for branch_commit in branch_status['only-upstream']:
+                print ' ' + colours.GREEN + branch_commit['SHA1'] + \
+                    colours.ENDC + ' ' + branch_commit['title']
+            for branch_commit in branch_status['only-downstream']:
+                print ' ' + colours.BLUE + branch_commit['SHA1'] + \
+                    colours.ENDC + ' ' + branch_commit['title']
+            print ''
 
 def add(args):
     sr.add_submodule(args.module, args.url, args.upstreamurl, args.type, args.revision)

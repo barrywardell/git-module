@@ -229,11 +229,27 @@ class GitSuperRepository():
             remote = self.config(['branch.'+branch+'.remote'], module)
         except:
             # If the branch doesn't have a remote then return an empty list
-            return []
+            return None
+
         remote_ref = self.config(['branch.'+branch+'.merge'], module)
         remote_branch = re.sub('^refs/heads/', '', remote_ref)
-        return self.git_command(['rev-list', '--oneline', '--left-right',
-            branch+'...'+remote+'/'+remote_branch], module).splitlines()
+
+        only_upstream = self.git_command(['rev-list', '--oneline',
+            branch + '..' + remote + '/' + remote_branch], module).splitlines()
+        only_upstream2 = []
+        for commit in only_upstream:
+            (sha1, title) = commit.split(' ', 1)
+            only_upstream2.append({'SHA1' : sha1, 'title' : title})
+
+        only_downstream = self.git_command(['rev-list', '--oneline',
+            remote + '/' + remote_branch + '..' + branch], module).splitlines()
+        only_downstream2 = []
+        for commit in only_downstream:
+            (sha1, title) = commit.split(' ', 1)
+            only_downstream2.append({'SHA1' : sha1, 'title' : title})
+
+        return {'only-upstream' : only_upstream2,
+                'only-downstream' : only_downstream2}
 
     def checkout_modules(self, modules):
         """Checkout a list of submodules to the branches they should be tracking."""
