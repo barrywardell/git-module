@@ -117,9 +117,9 @@ def config(args):
     module = args.module
     configvar = args.var
     if args.val != None:
-        sr.set_module_config(module, configvar, args.val)
+        sr.set_gitmodules_config(module, configvar, args.val)
     else:
-        print sr.get_module_config(module, configvar)
+        print sr.get_gitmodules_config(module, configvar)
 
 def ls(args):
     modules = sr.list_submodules()
@@ -210,7 +210,8 @@ def main(*args):
 
     # config
     parser_config = subparsers.add_parser('config',
-        parents=[parent_module], help='configure a module')
+        parents=[parent_module], help='configure a module\'s entry in '\
+                                      'the .gitmodules file')
     parser_config.set_defaults(func=config)
     parser_config.add_argument('var', help='variable to configure')
     parser_config.add_argument('val', nargs='?', help='new value for variable')
