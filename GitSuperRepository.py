@@ -95,6 +95,7 @@ class GitSuperRepository():
             return False
 
     def assert_is_submodule(self, path):
+        """Raise an exception if path is not a valid submodule."""
         if not self.is_submodule(path):
             raise ValueError('Error: ' + path + ' is not a submodule.')
 
@@ -193,6 +194,10 @@ class GitSuperRepository():
         return modules
 
     def list_branches(self, module=None):
+        """
+        List all local branches. If module is not 'None', list all branches
+        in that submodule.
+        """
         res = self.git_command(['branch', '--no-color'], module).splitlines()
         branches = []
         for branch in res:
@@ -202,6 +207,10 @@ class GitSuperRepository():
         return branches
 
     def remote_status(self, module, branch):
+        """
+        For the specified branch, lists the commits which are different between
+        the local and the tracked upstream version of that branch.
+        """
         try:
             remote = self.config(['branch.'+branch+'.remote'], module)
         except:
