@@ -48,8 +48,8 @@ sr = GitSuperRepository()
 
 class colours:
     BOLD    = "\033[1m"
-    BLACK   = '\033[32m'
-    RED     = '\033[32m'
+    BLACK   = '\033[30m'
+    RED     = '\033[31m'
     GREEN   = '\033[32m'
     WARNING = '\033[33m'
     BLUE    = '\033[34m'
