@@ -15,9 +15,16 @@
 # with this library; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 
-"""A class for simplifying the management of a git repository containing
-   submodules which may be stored upstream in various version control systems,
-   including git, mercurial and svn."""
+"""
+==========================
+GitSuperRepository Package
+==========================
+
+The GitSuperRepository package provides the GitSuperRepository class, which
+presents an Python interface to a git repository. This repository may contain
+submodules which are stored upstream in various version control systems
+including git, mercurial and svn.
+"""
 
 import pprint, sys, os, re
 from subprocess import call
@@ -31,12 +38,17 @@ except ImportError:
         return subprocess.Popen(x, bufsize, executable, stdin, subprocess.PIPE, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags).communicate()[0]
 
 class GitSuperRepository():
-    """Manage a git super-repository containing submodules."""
+    """
+    Creating a GitSuperRepository object binds the object to a specific git
+    repository.
+    """
     def __init__(self, path=None):
-        """Create a GitSuperRepository object to manage a git repository.
+        """
+        Create a GitSuperRepository object to manage a git repository.
 
         The root of the git repository is assumed to be 'path'. If this is not
-        specified, then it is assumed to be the current working directory."""
+        specified, then it is assumed to be the current working directory.
+        """
 
         if(path == None):
             path = os.path.abspath(os.curdir)
