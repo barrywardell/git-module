@@ -140,14 +140,13 @@ def summary(args):
                   + len(branch_status['only-downstream'])) == 0:
                 continue
 
-            print module + ': ' + branch
+            print colours.BOLD + module + ': ' + branch + colours.ENDC
             for branch_commit in branch_status['only-upstream']:
-                print ' ' + colours.GREEN + branch_commit['SHA1'] + \
+                print ' ' + colours.RED + branch_commit['SHA1'] + \
                     colours.ENDC + ' ' + branch_commit['title']
             for branch_commit in branch_status['only-downstream']:
-                print ' ' + colours.BLUE + branch_commit['SHA1'] + \
+                print ' ' + colours.GREEN + branch_commit['SHA1'] + \
                     colours.ENDC + ' ' + branch_commit['title']
-            print ''
 
 def add(args):
     sr.add_submodule(args.module, args.url, args.upstreamurl, args.type, args.revision)
