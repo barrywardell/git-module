@@ -26,6 +26,8 @@ submodules which are stored upstream in various version control systems
 including git, mercurial and svn.
 """
 
+from __future__ import print_function
+
 import pprint, sys, os, re
 from subprocess import call
 
@@ -143,7 +145,7 @@ class GitSuperRepository():
         type = self.upstream_type(path)
         url  = self.upstream_url(path)
 
-        print 'Initialising submodule ' + type + ' upstream repository for ' + path + '\nwith upstream URL ' + url
+        print('Initialising submodule ' + type + ' upstream repository for ' + path + '\nwith upstream URL ' + url)
 
         if type == 'svn':
             rev = self.revision(path)
@@ -162,7 +164,7 @@ class GitSuperRepository():
             call(['hg', '-R', hgpath, 'gexport'])
             call(['hg', '-R', hgpath, 'pull', 'git'])
         else:
-            print('Unknown upstream repository type: '+type)
+            print('Unknown upstream repository type: ' + type)
         return
 
     def mv_submodule(self, old, new):
@@ -235,23 +237,23 @@ class GitSuperRepository():
 
     def checkout_modules(self, modules):
         """Checkout a list of submodules to the branches they should be tracking."""
-        print 'Checking out branches in submodules:'
+        print('Checking out branches in submodules:')
         for module in modules:
             rev = self.revision(module)
-            print '  ' + module + ': ' + rev
+            print('  ' + module + ': ' + rev)
             self.git_command(['checkout', '-q', rev], module)
 
     def pull_ff(self, modules):
         """Do a fast-forward only pull of a list of submodules."""
-        print 'Updating local branches where possible:'
+        print('Updating local branches where possible:')
         for module in modules:
             rev = self.revision(module)
-            print '  ' + module + ': ' + rev
+            print('  ' + module + ': ' + rev)
             self.git_command(['pull', '--ff-only', '-q'], module)
 
     def fetch_modules(self, modules):
         """Fetch a list of submodules from their remotes."""
-        print 'Getting updates for submodules:'
+        print('Getting updates for submodules:')
         for module in modules:
-            print '  ' + module
+            print('  ' + module)
             self.git_command(['fetch', '-q'], module)
