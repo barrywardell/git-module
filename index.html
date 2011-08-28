@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to git-module’s documentation! &mdash; git-module v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="git-module v0.1 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">git-module v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to git-module&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#gitsuperrepository-package">GitSuperRepository Package</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-git-module-s-documentation">
+<h1>Welcome to git-module&#8217;s documentation!<a class="headerlink" href="#welcome-to-git-module-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-GitSuperRepository"></span><div class="section" id="gitsuperrepository-package">
+<h2>GitSuperRepository Package<a class="headerlink" href="#gitsuperrepository-package" title="Permalink to this headline">¶</a></h2>
+<p>The GitSuperRepository package provides the GitSuperRepository class, which
+presents an Python interface to a git repository. This repository may contain
+submodules which are stored upstream in various version control systems
+including git, mercurial and svn.</p>
+<dl class="class">
+<dt id="GitSuperRepository.GitSuperRepository">
+<em class="property">class </em><tt class="descclassname">GitSuperRepository.</tt><tt class="descname">GitSuperRepository</tt><big>(</big><em>path=None</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creating a GitSuperRepository object binds the object to a specific git
+repository.</p>
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.add_submodule">
+<tt class="descname">add_submodule</tt><big>(</big><em>path</em>, <em>url</em>, <em>upstreamurl</em>, <em>type</em>, <em>revision</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.add_submodule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.assert_is_submodule">
+<tt class="descname">assert_is_submodule</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.assert_is_submodule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise an exception if path is not a valid submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.checkout_modules">
+<tt class="descname">checkout_modules</tt><big>(</big><em>modules</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.checkout_modules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checkout a list of submodules to the branches they should be tracking.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.config">
+<tt class="descname">config</tt><big>(</big><em>command</em>, <em>module=None</em>, <em>file=None</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure the repository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.fetch_modules">
+<tt class="descname">fetch_modules</tt><big>(</big><em>modules</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.fetch_modules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch a list of submodules from their remotes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.get_gitmodules_config">
+<tt class="descname">get_gitmodules_config</tt><big>(</big><em>module</em>, <em>option</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.get_gitmodules_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a gitmodules configuration option for a submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.git_command">
+<tt class="descname">git_command</tt><big>(</big><em>command</em>, <em>module=None</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.git_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a git command on the repository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.is_submodule">
+<tt class="descname">is_submodule</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.is_submodule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if path is a submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.list_branches">
+<tt class="descname">list_branches</tt><big>(</big><em>module=None</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.list_branches" title="Permalink to this definition">¶</a></dt>
+<dd><p>List all local branches. If module is not &#8216;None&#8217;, list all branches
+in that submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.list_submodules">
+<tt class="descname">list_submodules</tt><big>(</big><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.list_submodules" title="Permalink to this definition">¶</a></dt>
+<dd><p>List all submodules.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.mv_submodule">
+<tt class="descname">mv_submodule</tt><big>(</big><em>old</em>, <em>new</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.mv_submodule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move a submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.pull_ff">
+<tt class="descname">pull_ff</tt><big>(</big><em>modules</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.pull_ff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do a fast-forward only pull of a list of submodules.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.remote_status">
+<tt class="descname">remote_status</tt><big>(</big><em>module</em>, <em>branch</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.remote_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the specified branch, lists the commits which are different between
+the local and the tracked upstream version of that branch.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.revision">
+<tt class="descname">revision</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.revision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get branch of upstream repository which should be tracked by a submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.rm_submodule">
+<tt class="descname">rm_submodule</tt><big>(</big><em>old</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.rm_submodule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.set_gitmodules_config">
+<tt class="descname">set_gitmodules_config</tt><big>(</big><em>module</em>, <em>option</em>, <em>value</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.set_gitmodules_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a gitmodules configuration option for a submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.set_revision">
+<tt class="descname">set_revision</tt><big>(</big><em>path</em>, <em>revision</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.set_revision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set branch of upstream repository which should be tracked by a submodule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.set_upstream_type">
+<tt class="descname">set_upstream_type</tt><big>(</big><em>path</em>, <em>type</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.set_upstream_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set version control system used by upstream repository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.set_upstream_url">
+<tt class="descname">set_upstream_url</tt><big>(</big><em>path</em>, <em>url</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.set_upstream_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set URL of upstream repository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.upstream_init">
+<tt class="descname">upstream_init</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.upstream_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise a submodule for pushing patches upstream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.upstream_type">
+<tt class="descname">upstream_type</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.upstream_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get version control system used by upstream repository.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="GitSuperRepository.GitSuperRepository.upstream_url">
+<tt class="descname">upstream_url</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#GitSuperRepository.GitSuperRepository.upstream_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get URL of upstream repository.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">git-module v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Barry Wardell.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
