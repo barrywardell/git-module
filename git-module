@@ -149,7 +149,7 @@ def summary(args):
                     colours.ENDC + ' ' + branch_commit['title']
 
 def add(args):
-    sr.add_submodule(args.module, args.url, args.upstreamurl, args.type, args.revision)
+    sr.add_submodule(args.path, args.url, args.upstreamurl, args.type, args.revision)
 
 def mv(args):
     print 'Moving submodule ' + args.module + ' to ' + args.new
@@ -218,7 +218,7 @@ def main(*args):
 
     # add
     parser_add = subparsers.add_parser('add',
-        parents=[parent_module], help='add a submodule')
+        help='add a submodule')
     parser_add.set_defaults(func=add)
     parser_add.add_argument('url', help='URL to get the new submodule from')
     parser_add.add_argument('path',
