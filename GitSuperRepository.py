@@ -52,9 +52,6 @@ class GitSuperRepository():
         specified, then it is assumed to be the current working directory.
         """
 
-        if(path == None):
-            path = os.path.abspath(os.curdir)
-
         self.__path    = path
         self.__git_dir = os.path.join(path, '.git')
 
