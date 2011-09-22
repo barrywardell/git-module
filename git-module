@@ -44,8 +44,6 @@ _git_module () { local cur prev
 
 _version = '0.1'
 
-sr = GitSuperRepository()
-
 class colours:
     BOLD    = "\033[1m"
     BLACK   = '\033[30m'
@@ -57,6 +55,24 @@ class colours:
     CYAN    = '\033[36m'
     WHITE   = '\033[37m'
     ENDC    = '\033[0m'
+
+# Recursively search the current directory and all parent directories until
+# we find a git super-repo
+def load_super_repo():
+    global sr
+    path = os.path.abspath(os.curdir)
+    while True:
+        try:
+            sr = GitSuperRepository(path)
+        except ValueError:
+            if path == '/':
+                print 'No git super-repository found in current directory or '\
+                      'any of its parents'
+                break
+            path = os.path.dirname(path)
+        else:
+            break
+    return path
 
 def setup(args):
     bindir = os.path.join(os.getcwd(),'bin')
@@ -87,22 +103,28 @@ def setup(args):
     else:
         print "Not replacing ~/.profile with ~/.profile.tmp for safety. Replace it manually if it looks OK."
 
+def module_relpath(path):
+    return os.path.relpath(path, sr_path)
+
 def init_upstream(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
+    modules = map(module_relpath, modules)
     map(sr.upstream_init, modules)
 
 def checkout(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
+    modules = map(module_relpath, modules)
     sr.checkout_modules(modules)
 
 def update(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
+    modules = map(module_relpath, modules)
     sr.fetch_modules(modules)
     sr.checkout_modules(modules)
     sr.pull_ff(modules)
@@ -111,10 +133,11 @@ def fetch(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
+    modules = map(module_relpath, modules)
     sr.fetch_modules(modules)
 
 def config(args):
-    module = args.module
+    module = module_relpath(args.module)
     configvar = args.var
     if args.val != None:
         sr.set_gitmodules_config(module, configvar, args.val)
@@ -130,6 +153,7 @@ def summary(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
+    modules = map(module_relpath, modules)
 
     for module in modules:
         branches = sr.list_branches(module)
@@ -152,14 +176,19 @@ def add(args):
     sr.add_submodule(args.path, args.url, args.upstreamurl, args.type, args.revision)
 
 def mv(args):
-    print 'Moving submodule ' + args.module + ' to ' + args.new
-    sr.mv_submodule(args.module, args.new)
+    module = module_relpath(args.module)
+    print 'Moving submodule ' + module + ' to ' + args.new
+    sr.mv_submodule(module, args.new)
 
 def rm(args):
-    print 'Removing submodule ' + args.module
-    sr.rm_submodule(args.module)
+    module = module_relpath(args.module)
+    print 'Removing submodule ' + module
+    sr.rm_submodule(module)
 
 def main(*args):
+    global sr_path
+    sr_path = load_super_repo()
+
     # We use argparse to parse the command line options
     parser = argparse.ArgumentParser(description =
         'A tool for simplifying the management of git submodules.')

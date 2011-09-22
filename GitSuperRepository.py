@@ -54,10 +54,12 @@ class GitSuperRepository():
 
         self.__path    = path
         self.__git_dir = os.path.join(path, '.git')
+        self.__dot_gitmodules = os.path.join(self.__path, '.gitmodules')
 
         # Check we have a git repository
-        if not os.path.isdir(self.__git_dir):
-            raise ValueError(self.__git_dir + ' is not a git repository')
+        if not os.path.isdir(self.__git_dir) or \
+           not os.path.isfile(self.__dot_gitmodules):
+            raise ValueError(self.__git_dir + ' is not a git super-repository')
 
     def __num_lines(self, test):
         """Count the number of lines in a string."""
@@ -70,7 +72,7 @@ class GitSuperRepository():
         if module == None:
             git_dir   = '--git-dir=' + self.__git_dir
             work_tree = '--work-tree=' + self.__path
-            return check_output(['git', git_dir, work_tree] + command).rstrip('\n')
+            return check_output(['git', git_dir, work_tree] + command, cwd=self.__path).rstrip('\n')
         else:
             self.assert_is_submodule(module)
             module_abspath =  os.path.join(self.__path, module)
@@ -87,12 +89,12 @@ class GitSuperRepository():
     def get_gitmodules_config(self, module, option):
         """Get a gitmodules configuration option for a submodule."""
         return self.config(['submodule.' + module + '.' + option],
-                            file='.gitmodules')
+                            file=self.__dot_gitmodules)
 
     def set_gitmodules_config(self, module, option, value):
         """Set a gitmodules configuration option for a submodule."""
         return self.config(['submodule.' + module + '.' + option, value],
-                            file='.gitmodules')
+                            file=self.__dot_gitmodules)
 
     def is_submodule(self, path):
         """Check if path is a submodule."""
@@ -169,20 +171,22 @@ class GitSuperRepository():
         self.assert_is_submodule(old)
 
         self.config(['--rename-section', 'submodule.'+old, 'submodule.'+new])
-        self.config(['--rename-section', 'submodule.'+old, 'submodule.'+new], file='.gitmodules')
-        self.config(['submodule.'+new+'.path', new], file='.gitmodules')
+        self.config(['--rename-section', 'submodule.'+old, 'submodule.'+new],
+            file=self.__dot_gitmodules)
+        self.config(['submodule.'+new+'.path', new], file=self.__dot_gitmodules)
         self.git_command(['rm', '--cached', old])
         os.rename(old, new)
         self.git_command(['add', new])
-        self.git_command(['add', '.gitmodules'])
+        self.git_command(['add', self.__dot_gitmodules])
 
     def rm_submodule(self, old):
         """Remove a submodule."""
         self.assert_is_submodule(old)
         self.config(['--remove-section', 'submodule.'+old])
-        self.config(['--remove-section', 'submodule.'+old], file='.gitmodules')
+        self.config(['--remove-section', 'submodule.'+old],
+            file=self.__dot_gitmodules)
         self.git_command(['rm', '--cached', old])
-        self.git_command(['add', '.gitmodules'])
+        self.git_command(['add', self.__dot_gitmodules])
 
     def add_submodule(self, path, url, upstreamurl, type, revision):
         """Add a submodule."""
@@ -190,11 +194,11 @@ class GitSuperRepository():
         self.set_upstream_url(path, upstreamurl)
         self.set_upstream_type(path, type)
         self.set_revision(path, revision)
-        self.git_command(['add', '.gitmodules'])
+        self.git_command(['add', self.__dot_gitmodules])
 
     def list_submodules(self):
         """List all submodules."""
-        f = open('.gitmodules')
+        f = open(self.__dot_gitmodules)
         pattern = re.compile('\[submodule "(.*)"]')
         modules = []
         for line in f:
