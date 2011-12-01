@@ -166,10 +166,10 @@ def summary(args):
 
             print colours.BOLD + module + ': ' + branch + colours.ENDC
             for branch_commit in branch_status['only-upstream']:
-                print ' ' + colours.RED + branch_commit['SHA1'] + \
+                print ' ' + colours.GREEN + branch_commit['SHA1'] + \
                     colours.ENDC + ' ' + branch_commit['title']
             for branch_commit in branch_status['only-downstream']:
-                print ' ' + colours.GREEN + branch_commit['SHA1'] + \
+                print ' ' + colours.RED + branch_commit['SHA1'] + \
                     colours.ENDC + ' ' + branch_commit['title']
 
 def add(args):
