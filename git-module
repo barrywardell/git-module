@@ -185,6 +185,9 @@ def rm(args):
     print 'Removing submodule ' + module
     sr.rm_submodule(module)
 
+def sync_gitmodules(args):
+    sr.sync_gitmodules()
+
 def main(*args):
     global sr_path
     sr_path = load_super_repo()
@@ -271,6 +274,11 @@ def main(*args):
     parser_ls = subparsers.add_parser('ls',
         help='list all submodules')
     parser_ls.set_defaults(func=ls)
+
+    # sync
+    parser_sync = subparsers.add_parser('sync',
+        help='synchronize with .gitmodules')
+    parser_sync.set_defaults(func=sync_gitmodules)
 
     args = parser.parse_args()
     try:

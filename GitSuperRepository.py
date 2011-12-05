@@ -29,6 +29,7 @@ including git, mercurial and svn.
 from __future__ import print_function
 
 import pprint, sys, os, re
+import tempfile
 from subprocess import call
 
 # subprocess.check_output is only available in newer Python versions
@@ -196,9 +197,11 @@ class GitSuperRepository():
         self.set_revision(path, revision)
         self.git_command(['add', self.__dot_gitmodules])
 
-    def list_submodules(self):
+    def list_submodules(self, gitmodules_file=None):
         """List all submodules."""
-        f = open(self.__dot_gitmodules)
+        if gitmodules_file == None:
+            gitmodules_file = self.__dot_gitmodules
+        f = open(gitmodules_file)
         pattern = re.compile('\[submodule "(.*)"]')
         modules = []
         for line in f:
@@ -274,3 +277,34 @@ class GitSuperRepository():
         for module in modules:
             print('  ' + module)
             self.git_command(['fetch', '-q'], module)
+
+    def sync_gitmodules(self):
+        """Syncronize the super-repository with the information specified in .gitmodules."""
+        # Copy new .gitmodules to a temporary file
+        tmpfile = tempfile.NamedTemporaryFile(delete=False, suffix='.gitmodules', dir=self.__path)
+        new_gitmodules = os.path.join(self.__path, tmpfile.name)
+        tmpfile.close()
+        os.rename(self.__dot_gitmodules, new_gitmodules)
+        self.git_command(['checkout', '--', '.gitmodules'])
+
+        # Find out which submodules are new or old (removed)
+        previous_submodules = set(self.list_submodules())
+        current_submodules = set(self.list_submodules(gitmodules_file = new_gitmodules))
+
+        common_submodules = current_submodules & previous_submodules
+        new_submodules = current_submodules - common_submodules
+        old_submodules = previous_submodules - common_submodules
+
+        for module in old_submodules:
+            self.rm_submodule(module)
+
+        for module in new_submodules:
+            path = self.config(['submodule.' + module + '.path'], file=new_gitmodules)
+            url =  self.config(['submodule.' + module + '.url'], file=new_gitmodules)
+            upstreamurl = self.config(['submodule.' + module + '.upstreamurl'], file=new_gitmodules)
+            type =  self.config(['submodule.' + module + '.upstreamtype'], file=new_gitmodules)
+            revision =  self.config(['submodule.' + module + '.revision'], file=new_gitmodules)
+            self.add_submodule(path, url, upstreamurl, type, revision)
+
+        os.rename(new_gitmodules, self.__dot_gitmodules)
+        self.git_command(['add', self.__dot_gitmodules])
