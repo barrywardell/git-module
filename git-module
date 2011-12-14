@@ -155,6 +155,9 @@ def summary(args):
         modules = sr.list_submodules()
     modules = map(module_relpath, modules)
 
+    if (not args.no_fetch):
+        sr.fetch_modules(modules)
+
     for module in modules:
         branches = sr.list_branches(module)
         for branch in branches:
@@ -235,6 +238,7 @@ def main(*args):
     parser_summary = subparsers.add_parser('summary',
         parents=[parent_modules], help='summarize the status of submodules')
     parser_summary.set_defaults(func=summary)
+    parser_summary.add_argument('--no-fetch', action='store_true')
 
     # parent parser for options which operate a singule module
     parent_module = argparse.ArgumentParser(add_help=False)
