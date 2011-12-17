@@ -22,6 +22,7 @@
 from GitSuperRepository import GitSuperRepository
 import sys, os
 import argparse
+import subprocess
 
 bash_completion_text ='''
 _git_module () { local cur prev
@@ -140,9 +141,10 @@ def commit(args):
     # FIXME: It would be nice to use '--edit' here but it causes the error
     # "Vim: Warning: Output is not to a terminal"
     try:
-        sr.git_command(['commit', '-m', message])
+        output = sr.git_command(['commit', '-m', message])
+        print output
     except subprocess.CalledProcessError, e:
-        pass
+        print e.output
 
 def fetch(args):
     modules = args.modules
