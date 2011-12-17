@@ -224,6 +224,12 @@ class GitSuperRepository():
                 branches.append(branch.strip(' *'))
         return branches
 
+    def stage(self, path):
+        """
+        Stage a file into the index.
+        """
+        self.git_command(['add', path])
+
     def remote_status(self, module, branch):
         """
         For the specified branch, lists the commits which are different between

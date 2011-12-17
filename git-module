@@ -27,12 +27,12 @@ bash_completion_text ='''
 _git_module () { local cur prev
     _get_comp_words_by_ref -n =: cur prev
     case "$prev" in
-    init-upstream|rm|mv|checkout|update|fetch|config|summary)
+    checkout|commit|config|fetch|init-upstream|mv|rm|summary|update)
 	    __gitcomp "$(git module ls)"
     	return
 	    ;;
     git-module|module)
-        __gitcomp "add checkout config fetch init-upstream ls mv rm setup summary update"
+        __gitcomp "add checkout commit config fetch init-upstream ls mv rm setup summary sync update"
         return
         ;;
     *)
@@ -128,6 +128,18 @@ def update(args):
     sr.fetch_modules(modules)
     sr.checkout_modules(modules)
     sr.pull_ff(modules)
+
+def commit(args):
+    modules = args.modules
+    if modules == []:
+        modules = sr.list_submodules()
+    modules = map(module_relpath, modules)
+    map(sr.stage, modules)
+    message = "Updated submodules:\n\n" + sr.git_command(['submodule', 'summary'])
+
+    # FIXME: It would be nice to use '--edit' here but it causes the error
+    # "Vim: Warning: Output is not to a terminal"
+    sr.git_command(['commit', '-m', message])
 
 def fetch(args):
     modules = args.modules
@@ -283,6 +295,11 @@ def main(*args):
     parser_sync = subparsers.add_parser('sync',
         help='synchronize with .gitmodules')
     parser_sync.set_defaults(func=sync_gitmodules)
+
+    # commit
+    parser_commit = subparsers.add_parser('commit',
+        parents=[parent_modules], help='Commit changes to modules.')
+    parser_commit.set_defaults(func=commit)
 
     args = parser.parse_args()
     try:
