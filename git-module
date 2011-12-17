@@ -144,7 +144,7 @@ def commit(args):
         output = sr.git_command(['commit', '-m', message])
         print output
     except subprocess.CalledProcessError, e:
-        print e.output
+        print e.output,
 
 def fetch(args):
     modules = args.modules
