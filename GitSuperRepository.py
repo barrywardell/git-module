@@ -30,7 +30,7 @@ from __future__ import print_function
 
 import pprint, sys, os, re
 import tempfile
-from subprocess import call
+from subprocess import call, CalledProcessError
 
 # subprocess.check_output is only available in newer Python versions
 try:
@@ -68,18 +68,30 @@ class GitSuperRepository():
             pass
         return i + 1
 
-    def git_command(self, command, module=None):
+    def git_command(self, command, module=None, exceptions=True):
         """Execute a git command on the repository."""
         if module == None:
             git_dir   = '--git-dir=' + self.__git_dir
             work_tree = '--work-tree=' + self.__path
-            return check_output(['git', git_dir, work_tree] + command, cwd=self.__path).rstrip('\n')
+            if exceptions:
+                return check_output(['git', git_dir, work_tree] + command, cwd=self.__path).rstrip('\n')
+            else:
+                try:
+                    output = check_output(['git', git_dir, work_tree] + command, cwd=self.__path).rstrip('\n')
+                except CalledProcessError, e:
+                    print(e.output, end='')
         else:
             self.assert_is_submodule(module)
             module_abspath =  os.path.join(self.__path, module)
             git_dir   = '--git-dir=' + os.path.join(module_abspath, '.git')
             work_tree = '--work-tree=' + module_abspath
-            return check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).rstrip('\n')
+            if exceptions:
+                return check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).rstrip('\n')
+            else:
+                try:
+                    output = check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).rstrip('\n')
+                except CalledProcessError, e:
+                    print(e.output, end='')
 
     def config(self, command, module=None, file=None):
         """Configure the repository."""
@@ -275,14 +287,14 @@ class GitSuperRepository():
         for module in modules:
             rev = self.revision(module)
             print('  ' + module + ': ' + rev)
-            self.git_command(['pull', '--ff-only', '-q'], module)
+            self.git_command(['pull', '--ff-only', '-q'], module, exceptions=False)
 
     def fetch_modules(self, modules):
         """Fetch a list of submodules from their remotes."""
         print('Getting updates for submodules:')
         for module in modules:
             print('  ' + module)
-            self.git_command(['fetch', '-q'], module)
+            self.git_command(['fetch', '-q'], module, exceptions=False)
 
     def sync_gitmodules(self):
         """Syncronize the super-repository with the information specified in .gitmodules."""
