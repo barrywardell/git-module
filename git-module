@@ -24,6 +24,8 @@ import sys, os
 import argparse
 import subprocess
 
+import operator
+
 bash_completion_text ='''
 _git_module () { local cur prev
     _get_comp_words_by_ref -n =: cur prev
@@ -146,6 +148,17 @@ def commit(args):
     except subprocess.CalledProcessError, e:
         print e.output,
 
+def utc_from_git_date(git_date):
+    git_date_list = git_date.split()
+
+    offset = git_date_list[1]
+
+    sign = offset[0]+"1"
+    hour = offset[1:2]
+    minute = offset[3:4]
+
+    return int(git_date_list[0])-int(sign)*(int(hour)*3600+int(minute)*60)
+
 def commit_incremental(args):
     # FIXME: handle exceptions and restore the index to the original state in case of an error
     modules = args.modules
@@ -153,17 +166,32 @@ def commit_incremental(args):
         modules = sr.list_submodules()
     modules = map(module_relpath, modules)
 
+    # A list of [module, commit, date]
+    commits = []
+
     for m in modules:
         current = sr.current_submodule_commit(m)
+        # FIXME: this could be made much faster by using a single log
+        # command which returned both the hash and the raw date for
+        # the entire range of commits
         for c in sr.submodule_commits_since(m, current):
-            sr.stage_submodule(m,c)
+            raw_date_str = sr.git_command(['log', '-n', '1', c, '--format=%ad', '--date=raw'],
+                                          module=m)
+            date = utc_from_git_date(raw_date_str)
+            commits.append([m, c, date])
 
-            message = m.split("/")[-1]+": "+sr.git_command(['log', '-n', '1', c, '--format=%s\n%b'],module=m)
-            author = sr.git_command(['log', '-n', '1', c, '--format=%an <%ae>'],module=m)
-            date = sr.git_command(['log', '-n', '1', c, '--format=%ad'],module=m)
+    if args.sort:
+        commits = sorted(commits,key=operator.itemgetter(2))
 
-            # TODO: handle exceptions here?
-            sr.commit(message,author=author,date=date)
+    for (m, c, date) in commits:
+        sr.stage_submodule(m,c)
+        # FIXME: We could combine the following three log commands into one if necessary
+        message = m.split("/")[-1]+": "+sr.git_command(['log', '-n', '1', c, '--format=%s\n%b'],module=m)
+        author = sr.git_command(['log', '-n', '1', c, '--format=%an <%ae>'],module=m)
+        date_str = sr.git_command(['log', '-n', '1', c, '--format=%ad'],module=m)
+        # print m+": "+date_str
+        # TODO: handle exceptions here?
+        sr.commit(message,author=author,date=date_str)
 
 def fetch(args):
     modules = args.modules
@@ -326,9 +354,10 @@ def main(*args):
     parser_commit.set_defaults(func=commit)
 
     # commit-incremental
-    parser_commit = subparsers.add_parser('commit-incremental',
+    parser_commit_incremental = subparsers.add_parser('commit-incremental',
         parents=[parent_modules], help='Commit changes to modules (with one commit per submodule commit).')
-    parser_commit.set_defaults(func=commit_incremental)
+    parser_commit_incremental.set_defaults(func=commit_incremental)
+    parser_commit_incremental.add_argument('--sort', action='store_true')
 
     args = parser.parse_args()
     try:
