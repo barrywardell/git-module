@@ -146,6 +146,25 @@ def commit(args):
     except subprocess.CalledProcessError, e:
         print e.output,
 
+def commit_incremental(args):
+    # FIXME: handle exceptions and restore the index to the original state in case of an error
+    modules = args.modules
+    if modules == []:
+        modules = sr.list_submodules()
+    modules = map(module_relpath, modules)
+
+    for m in modules:
+        current = sr.current_submodule_commit(m)
+        for c in sr.submodule_commits_since(m, current):
+            sr.stage_submodule(m,c)
+
+            message = m.split("/")[-1]+": "+sr.git_command(['log', '-n', '1', c, '--format=%B'],module=m)
+            author = sr.git_command(['log', '-n', '1', c, '--format=%an <%ae>'],module=m)
+            date = sr.git_command(['log', '-n', '1', c, '--format=%ad'],module=m)
+
+            # TODO: handle exceptions here?
+            sr.commit(message,author=author,date=date)
+
 def fetch(args):
     modules = args.modules
     if modules == []:
@@ -305,6 +324,11 @@ def main(*args):
     parser_commit = subparsers.add_parser('commit',
         parents=[parent_modules], help='Commit changes to modules.')
     parser_commit.set_defaults(func=commit)
+
+    # commit-incremental
+    parser_commit = subparsers.add_parser('commit-incremental',
+        parents=[parent_modules], help='Commit changes to modules (with one commit per submodule commit).')
+    parser_commit.set_defaults(func=commit_incremental)
 
     args = parser.parse_args()
     try:
