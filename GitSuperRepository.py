@@ -326,3 +326,25 @@ class GitSuperRepository():
 
         os.rename(new_gitmodules, self.__dot_gitmodules)
         self.git_command(['add', self.__dot_gitmodules])
+
+    def stage_submodule(self, module, version):
+        # See http://serverfault.com/questions/251792/update-git-super-repository-automatically-when-a-submodule-gets-updated
+        self.git_command(['update-index', '--cacheinfo', '160000', version, module])
+
+    def current_submodule_commit(self, module):
+        return self.git_command(['ls-tree', 'HEAD', module]).split()[2]
+
+    def submodule_commits_since(self, module, since):
+        return self.git_command(['rev-list', "--reverse", since+'..HEAD'],module=module).split()
+
+    def commit(self, message, author=None, date=None):
+        (f, name) = tempfile.mkstemp()
+        os.write(f,message)
+        os.close(f)
+        args = ['commit', '-F', name]
+        if author != None:
+            args += ['--author', author]
+        if date != None:
+            args += ['--date', date]
+        self.git_command(args)
+        os.remove(name)
