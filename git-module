@@ -158,7 +158,7 @@ def commit_incremental(args):
         for c in sr.submodule_commits_since(m, current):
             sr.stage_submodule(m,c)
 
-            message = m.split("/")[-1]+": "+sr.git_command(['log', '-n', '1', c, '--format=%B'],module=m)
+            message = m.split("/")[-1]+": "+sr.git_command(['log', '-n', '1', c, '--format=%s\n%b'],module=m)
             author = sr.git_command(['log', '-n', '1', c, '--format=%an <%ae>'],module=m)
             date = sr.git_command(['log', '-n', '1', c, '--format=%ad'],module=m)
 
