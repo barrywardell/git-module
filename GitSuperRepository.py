@@ -165,7 +165,7 @@ class GitSuperRepository():
             self.git_command(['svn', 'init', '-s', '--prefix=origin/', url], module=path)
             self.git_command(['svn', 'fetch'], module=path)
         elif type == 'git':
-            self.git_command(['remote', 'add', 'upstream', url], module=path)
+            self.git_command(['remote', 'set-url', '--push', 'origin', url], module=path)
         elif type == 'hg':
             hgpath = path+'.hg'
             call(['hg', 'clone', url, hgpath])
