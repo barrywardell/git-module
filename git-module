@@ -19,6 +19,8 @@
 # with this library; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 
+from __future__ import print_function
+
 from GitSuperRepository import GitSuperRepository
 import sys, os
 import argparse
@@ -69,8 +71,8 @@ def load_super_repo():
             sr = GitSuperRepository(path)
         except ValueError:
             if path == '/':
-                print 'No git super-repository found in current directory or '\
-                      'any of its parents'
+                print('No git super-repository found in current directory or '\
+                      'any of its parents')
                 break
             path = os.path.dirname(path)
         else:
@@ -93,7 +95,7 @@ def setup(args):
             tmp.write(line)
     f.close()
 
-    print 'Adding git-module section to ~/.profile'
+    print('Adding git-module section to ~/.profile')
     if(line[-1] != '\n'):
         tmp.write('\n')
     tmp.write('# Begin git-module section\n')
@@ -104,7 +106,7 @@ def setup(args):
     if addLine == True:
         os.rename(os.path.expanduser('~/.profile.tmp'), os.path.expanduser('~/.profile'))
     else:
-        print "Not replacing ~/.profile with ~/.profile.tmp for safety. Replace it manually if it looks OK."
+        print("Not replacing ~/.profile with ~/.profile.tmp for safety. Replace it manually if it looks OK.")
 
 def module_relpath(path):
     return os.path.relpath(path, sr_path)
@@ -113,21 +115,21 @@ def init_upstream(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
-    modules = map(module_relpath, modules)
+    modules = list(map(module_relpath, modules))
     map(sr.upstream_init, modules)
 
 def checkout(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
-    modules = map(module_relpath, modules)
+    modules = list(map(module_relpath, modules))
     sr.checkout_modules(modules)
 
 def update(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
-    modules = map(module_relpath, modules)
+    modules = list(map(module_relpath, modules))
     sr.fetch_modules(modules)
     sr.checkout_modules(modules)
     sr.pull_ff(modules)
@@ -136,7 +138,7 @@ def commit(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
-    modules = map(module_relpath, modules)
+    modules = list(map(module_relpath, modules))
     map(sr.stage, modules)
     message = "Updated submodules:\n\n" + sr.git_command(['submodule', 'summary'])
 
@@ -144,9 +146,9 @@ def commit(args):
     # "Vim: Warning: Output is not to a terminal"
     try:
         output = sr.git_command(['commit', '-m', message])
-        print output
-    except subprocess.CalledProcessError, e:
-        print e.output,
+        print(output)
+    except subprocess.CalledProcessError as e:
+        print(e.output, end=' ')
 
 def utc_from_git_date(git_date):
     git_date_list = git_date.split()
@@ -164,7 +166,7 @@ def commit_incremental(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
-    modules = map(module_relpath, modules)
+    modules = list(map(module_relpath, modules))
 
     # A list of [module, commit, date]
     commits = []
@@ -197,7 +199,7 @@ def fetch(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
-    modules = map(module_relpath, modules)
+    modules = list(map(module_relpath, modules))
     sr.fetch_modules(modules)
 
 def config(args):
@@ -206,18 +208,18 @@ def config(args):
     if args.val != None:
         sr.set_gitmodules_config(module, configvar, args.val)
     else:
-        print sr.get_gitmodules_config(module, configvar)
+        print(sr.get_gitmodules_config(module, configvar))
 
 def ls(args):
     modules = sr.list_submodules()
     for module in modules:
-        print module
+        print(module)
 
 def summary(args):
     modules = args.modules
     if modules == []:
         modules = sr.list_submodules()
-    modules = map(module_relpath, modules)
+    modules = list(map(module_relpath, modules))
 
     if (not args.no_fetch):
         sr.fetch_modules(modules)
@@ -231,25 +233,25 @@ def summary(args):
                   + len(branch_status['only-downstream'])) == 0:
                 continue
 
-            print colours.BOLD + module + ': ' + branch + colours.ENDC
+            print(colours.BOLD + module + ': ' + branch + colours.ENDC)
             for branch_commit in branch_status['only-upstream']:
-                print ' ' + colours.GREEN + branch_commit['SHA1'] + \
-                    colours.ENDC + ' ' + branch_commit['title']
+                print(' ' + colours.GREEN + branch_commit['SHA1'] + \
+                    colours.ENDC + ' ' + branch_commit['title'])
             for branch_commit in branch_status['only-downstream']:
-                print ' ' + colours.RED + branch_commit['SHA1'] + \
-                    colours.ENDC + ' ' + branch_commit['title']
+                print(' ' + colours.RED + branch_commit['SHA1'] + \
+                    colours.ENDC + ' ' + branch_commit['title'])
 
 def add(args):
     sr.add_submodule(args.path, args.url, args.upstreamurl, args.type, args.revision)
 
 def mv(args):
     module = module_relpath(args.module)
-    print 'Moving submodule ' + module + ' to ' + args.new
+    print('Moving submodule ' + module + ' to ' + args.new)
     sr.mv_submodule(module, args.new)
 
 def rm(args):
     module = module_relpath(args.module)
-    print 'Removing submodule ' + module
+    print('Removing submodule ' + module)
     sr.rm_submodule(module)
 
 def sync_gitmodules(args):
@@ -363,7 +365,7 @@ def main(*args):
     try:
         args.func(args)
     except KeyboardInterrupt:
-        print 'Interrupted operation.'
+        print('Interrupted operation.')
 
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))

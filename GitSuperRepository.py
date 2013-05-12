@@ -74,11 +74,11 @@ class GitSuperRepository():
             git_dir   = '--git-dir=' + self.__git_dir
             work_tree = '--work-tree=' + self.__path
             if exceptions:
-                return check_output(['git', git_dir, work_tree] + command, cwd=self.__path).rstrip('\n')
+                return check_output(['git', git_dir, work_tree] + command, cwd=self.__path).decode().rstrip('\n')
             else:
                 try:
-                    output = check_output(['git', git_dir, work_tree] + command, cwd=self.__path).rstrip('\n')
-                except CalledProcessError, e:
+                    output = check_output(['git', git_dir, work_tree] + command, cwd=self.__path).decode().rstrip('\n')
+                except CalledProcessError as e:
                     print(e.output, end='')
         else:
             self.assert_is_submodule(module)
@@ -86,11 +86,11 @@ class GitSuperRepository():
             git_dir   = '--git-dir=' + os.path.join(module_abspath, '.git')
             work_tree = '--work-tree=' + module_abspath
             if exceptions:
-                return check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).rstrip('\n')
+                return check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).decode().rstrip('\n')
             else:
                 try:
-                    output = check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).rstrip('\n')
-                except CalledProcessError, e:
+                    output = check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).decode().rstrip('\n')
+                except CalledProcessError as e:
                     print(e.output, end='')
 
     def config(self, command, module=None, file=None):
