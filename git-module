@@ -140,7 +140,7 @@ def commit(args):
         modules = sr.list_submodules()
     modules = list(map(module_relpath, modules))
     map(sr.stage, modules)
-    message = "Updated submodules:\n\n" + sr.git_command(['submodule', 'summary'])
+    message = "Updated submodules:\n\n" + sr.git_command(['submodule', 'summary', '--cached'])
 
     # FIXME: It would be nice to use '--edit' here but it causes the error
     # "Vim: Warning: Output is not to a terminal"
