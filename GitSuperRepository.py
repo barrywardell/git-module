@@ -74,10 +74,10 @@ class GitSuperRepository():
             git_dir   = '--git-dir=' + self.__git_dir
             work_tree = '--work-tree=' + self.__path
             if exceptions:
-                return check_output(['git', git_dir, work_tree] + command, cwd=self.__path).decode().rstrip('\n')
+                return check_output(['git', git_dir, work_tree] + command, cwd=self.__path).decode('utf_8').rstrip('\n')
             else:
                 try:
-                    output = check_output(['git', git_dir, work_tree] + command, cwd=self.__path).decode().rstrip('\n')
+                    output = check_output(['git', git_dir, work_tree] + command, cwd=self.__path).decode('utf_8').rstrip('\n')
                 except CalledProcessError as e:
                     print(e.output, end='')
         else:
@@ -87,10 +87,10 @@ class GitSuperRepository():
             work_tree = '--work-tree=' + module_abspath
             if exceptions:
                 # TODO: find a better way of dealing with weird characters
-                return check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).decode('ascii','ignore').rstrip('\n')
+                return check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).decode('utf_8').rstrip('\n')
             else:
                 try:
-                    output = check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).decode().rstrip('\n')
+                    output = check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).decode('utf_8').rstrip('\n')
                 except CalledProcessError as e:
                     print(e.output, end='')
 
