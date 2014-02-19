@@ -86,7 +86,8 @@ class GitSuperRepository():
             git_dir   = '--git-dir=' + os.path.join(module_abspath, '.git')
             work_tree = '--work-tree=' + module_abspath
             if exceptions:
-                return check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).decode().rstrip('\n')
+                # TODO: find a better way of dealing with weird characters
+                return check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).decode('ascii','ignore').rstrip('\n')
             else:
                 try:
                     output = check_output(['git', git_dir, work_tree] + command, cwd=module_abspath).decode().rstrip('\n')
